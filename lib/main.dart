@@ -86,9 +86,21 @@ class _MyHomePageState extends State<MyHomePage> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
+                  RaisedButton(
+                    padding: EdgeInsets.all(12.0),
+                    child: Row(
+                      // Replace with a Row for horizontal icon + text
+                      children: <Widget>[
+                        Icon(Icons.attach_money),
+                        Text("Prix d\'achat net")
+                      ],
+                    ),
+                    onPressed: () {
+                      _showDialog(context);
+                    },
+                  ),
                   const ListTile(
-                    leading: Icon(Icons.attach_money),
-                    title: Text('Prix d\'achat net'),
+                    title: Text('Calcul du prix d\'achat net'),
                     subtitle: Text(
                       'En fonction du prix d\'achat brute et d\'un taux de remise',
                       style: TextStyle(
@@ -104,4 +116,37 @@ class _MyHomePageState extends State<MyHomePage> {
       ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
+}
+
+void _showDialog(BuildContext context) {
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      // return object of type Dialog
+      return AlertDialog(
+        title: new Text("Alert Dialog title"),
+        content: new Row(
+          children: <Widget>[
+            new Expanded(
+              child: new TextField(
+                autofocus: true,
+                decoration: new InputDecoration(
+                  labelText: 'test',
+                ),
+              ),
+            )
+          ],
+        ),
+        actions: <Widget>[
+          // usually buttons at the bottom of the dialog
+          new FlatButton(
+            child: new Text("Fermer"),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          ),
+        ],
+      );
+    },
+  );
 }
