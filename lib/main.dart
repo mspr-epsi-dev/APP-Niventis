@@ -123,27 +123,46 @@ void _showDialog(BuildContext context) {
     context: context,
     builder: (BuildContext context) {
       // return object of type Dialog
-      return AlertDialog(
-        title: new Text("Alert Dialog title"),
-        content: new Row(
-          children: <Widget>[
-            new Expanded(
-              child: new TextField(
-                autofocus: true,
-                decoration: new InputDecoration(
-                  labelText: 'test',
+      return SimpleDialog(
+        title: new Text("Calcul prix d'achat net"),
+        children: <Widget>[
+          new SimpleDialogOption(
+            child: new Row(
+              children: <Widget>[
+                new Expanded(
+                  child: new TextField(
+                    autofocus: true,
+                    decoration: new InputDecoration(
+                        labelText: 'Prix d\'achat brut',
+                        labelStyle: TextStyle(
+                          fontSize: 12,
+                        )),
+                    keyboardType: TextInputType.number,
+                  ),
                 ),
-              ),
-            )
-          ],
-        ),
-        actions: <Widget>[
-          // usually buttons at the bottom of the dialog
-          new FlatButton(
-            child: new Text("Fermer"),
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
+                new Expanded(
+                  child: new TextField(
+                    decoration: new InputDecoration(
+                        labelText: 'Taux de remise',
+                        labelStyle: TextStyle(
+                          fontSize: 12,
+                        )),
+                    keyboardType: TextInputType.number,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          new SimpleDialogOption(
+            child: new Text("Prix d\'achat net : "),
+          ),
+          new SimpleDialogOption(
+            child: new FlatButton(
+              child: new Text("Fermer"),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
           ),
         ],
       );
