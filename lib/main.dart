@@ -45,6 +45,76 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  void _showDialog(BuildContext context) {
+    double pAchatBrut = 0;
+    double tauxRemise = 0;
+    double _resCalcul = 0;
+
+    void _setResCalcul() {
+      setState(() {
+        _resCalcul = pAchatBrut*(1-tauxRemise);
+      });
+    }
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        // return object of type Dialog
+        return SimpleDialog(
+          title: new Text("Calcul prix d'achat net"),
+          children: <Widget>[
+            new SimpleDialogOption(
+              child: new Row(
+                children: <Widget>[
+                  new Expanded(
+                    child: new TextField(
+                      autofocus: true,
+                      decoration: new InputDecoration(
+                          labelText: 'Prix d\'achat brut (€)',
+                          labelStyle: TextStyle(
+                            fontSize: 12,
+                          )),
+                      keyboardType: TextInputType.number,
+                      onChanged: (newVal) {
+                        pAchatBrut = double.parse(newVal);
+                        _setResCalcul();
+                      },
+                    ),
+                  ),
+                  new Expanded(
+                    child: new TextField(
+                      decoration: new InputDecoration(
+                          labelText: 'Taux de remise (%)',
+                          labelStyle: TextStyle(
+                            fontSize: 12,
+                          )),
+                      keyboardType: TextInputType.number,
+                      onChanged: (newVal) {
+                        tauxRemise = double.parse(newVal)/100;
+                        _setResCalcul();
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            new SimpleDialogOption(
+              child: new Text("Prix d\'achat net : $_resCalcul€"),
+            ),
+            new SimpleDialogOption(
+              child: new FlatButton(
+                child: new Text("Fermer"),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     // This method is rerun every time setState is called, for instance as done
@@ -116,56 +186,4 @@ class _MyHomePageState extends State<MyHomePage> {
       ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
-}
-
-void _showDialog(BuildContext context) {
-  showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      // return object of type Dialog
-      return SimpleDialog(
-        title: new Text("Calcul prix d'achat net"),
-        children: <Widget>[
-          new SimpleDialogOption(
-            child: new Row(
-              children: <Widget>[
-                new Expanded(
-                  child: new TextField(
-                    autofocus: true,
-                    decoration: new InputDecoration(
-                        labelText: 'Prix d\'achat brut',
-                        labelStyle: TextStyle(
-                          fontSize: 12,
-                        )),
-                    keyboardType: TextInputType.number,
-                  ),
-                ),
-                new Expanded(
-                  child: new TextField(
-                    decoration: new InputDecoration(
-                        labelText: 'Taux de remise',
-                        labelStyle: TextStyle(
-                          fontSize: 12,
-                        )),
-                    keyboardType: TextInputType.number,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          new SimpleDialogOption(
-            child: new Text("Prix d\'achat net : "),
-          ),
-          new SimpleDialogOption(
-            child: new FlatButton(
-              child: new Text("Fermer"),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ),
-        ],
-      );
-    },
-  );
 }
