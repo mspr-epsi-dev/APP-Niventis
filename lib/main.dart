@@ -47,111 +47,29 @@ class _MyHomePageState extends State<MyHomePage> {
                 titre: "test",
                 labelGauche: "test",
                 labelDroite: "test",
-                labelResultat: "fez"
+                labelResultat: "fez",
+                resultat: (a, b) {
+                  return a * (1 - b);
+                },
               ),
             ),
-            Card(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  RaisedButton(
-                    padding: EdgeInsets.all(12.0),
-                    child: Row(
-                      // Replace with a Row for horizontal icon + text
-                      children: <Widget>[
-                        Icon(Icons.attach_money),
-                        Text("Prix d\'achat net")
-                      ],
-                    ),
-                    onPressed: () {
-                      _showDialog(context);
-                    },
-                  ),
-                  const ListTile(
-                    title: Text('Calcul du prix d\'achat net'),
-                    subtitle: Text(
-                      'En fonction du prix d\'achat brute et d\'un taux de remise',
-                      style: TextStyle(
-                        fontSize: 9,
-                      ),
-                    ),
-                  ),
-                ],
+            CalculCardWidget(
+              titre : "Prix d'achat net",
+              superDescription: "Calcul du prix d'achat net",
+              description: "En fonction du prix d'achat brute et d'un taux de remise",
+              dialog: CardDialog(
+                titre: "Calcul prix d'achat net",
+                labelGauche: "Prix d'achat brut (€)",
+                labelDroite: "Taux de remise (%)",
+                labelResultat: "Prix d'achat net",
+                resultat: (a, b) {
+                  return a * (1 - b);
+                },
               ),
             ),
           ],
         ),
       ), // This trailing comma makes auto-formatting nicer for build methods.
-    );
-  }
-
-  void _showDialog(BuildContext context) {
-    double pAchatBrut = 0;
-    double tauxRemise = 0;
-    double _resCalcul = 0;
-
-    void _setResCalcul() {
-      setState(() {
-        _resCalcul = pAchatBrut*(1-tauxRemise);
-      });
-    }
-
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        // return object of type Dialog
-        return SimpleDialog(
-          title: new Text("Calcul prix d'achat net"),
-          children: <Widget>[
-            new SimpleDialogOption(
-              child: new Row(
-                children: <Widget>[
-                  new Expanded(
-                    child: new TextField(
-                      autofocus: true,
-                      decoration: new InputDecoration(
-                          labelText: 'Prix d\'achat brut (€)',
-                          labelStyle: TextStyle(
-                            fontSize: 12,
-                          )),
-                      keyboardType: TextInputType.number,
-                      onChanged: (newVal) {
-                        pAchatBrut = double.parse(newVal);
-                        _setResCalcul();
-                      },
-                    ),
-                  ),
-                  new Expanded(
-                    child: new TextField(
-                      decoration: new InputDecoration(
-                          labelText: 'Taux de remise (%)',
-                          labelStyle: TextStyle(
-                            fontSize: 12,
-                          )),
-                      keyboardType: TextInputType.number,
-                      onChanged: (newVal) {
-                        tauxRemise = double.parse(newVal)/100;
-                        _setResCalcul();
-                      },
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            new SimpleDialogOption(
-              child: new Text("Prix d\'achat net : $_resCalcul€"),
-            ),
-            new SimpleDialogOption(
-              child: new FlatButton(
-                child: new Text("Fermer"),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-              ),
-            ),
-          ],
-        );
-      },
     );
   }
 }

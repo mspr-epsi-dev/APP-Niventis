@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
 class _CalculCardWidgetState extends State<CalculCardWidget> {
-  double pAchatBrut = 0;
-  double tauxRemise = 0;
+  double chiffreA = 0;
+  double chiffreB = 0;
   double _resCalcul = 0;
 
   @override
@@ -39,7 +39,7 @@ class _CalculCardWidgetState extends State<CalculCardWidget> {
   void _showDialog(BuildContext context) {
     void _setResCalcul() {
       setState(() {
-        _resCalcul = pAchatBrut * (1 - tauxRemise);
+        _resCalcul = widget.dialog.resultat(chiffreA, chiffreB);
       });
     }
 
@@ -63,7 +63,7 @@ class _CalculCardWidgetState extends State<CalculCardWidget> {
                           )),
                       keyboardType: TextInputType.number,
                       onChanged: (newVal) {
-                        pAchatBrut = double.parse(newVal);
+                        chiffreA = double.parse(newVal);
                         _setResCalcul();
                       },
                     ),
@@ -77,7 +77,7 @@ class _CalculCardWidgetState extends State<CalculCardWidget> {
                           )),
                       keyboardType: TextInputType.number,
                       onChanged: (newVal) {
-                        tauxRemise = double.parse(newVal) / 100;
+                        chiffreB = double.parse(newVal) / 100;
                         _setResCalcul();
                       },
                     ),
@@ -129,7 +129,8 @@ class CardDialog {
   final String labelGauche;
   final String labelDroite;
   final String labelResultat;
+  final Function(double, double) resultat;
 
   const CardDialog({this.titre, this.labelGauche, this.labelDroite,
-      this.labelResultat});
+      this.labelResultat, @required this.resultat});
 }
