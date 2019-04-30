@@ -40,32 +40,46 @@ class _MyHomePageState extends State<MyHomePage> {
           children: <Widget>[
             Text('Bienvenue sur la calculatrice de Niventis'),
             CalculCardWidget(
-              titre : "Taux de remise",
-              superDescription: "",
-              description: "",
-              dialog: CardDialog(
-                titre: "test",
-                labelGauche: "test",
-                labelDroite: "test",
-                labelResultat: "fez",
+              titre: "Taux de remise",
+              icon: Icons.replay_10,
+              superDescription: "Calcul du taux de remise",
+              description:
+                  "En fonction du prix d'achat brut et prix d'achat net",
+              dialog: CalculCardDialog(
+                titre: "Taux de remise",
+                labelGauche: "Prix d’achat net",
+                labelDroite: "Prix d’achat brut",
+                labelResultat: "Taux de remise",
                 resultat: (a, b) {
-                  return a * (1 - b);
+                  return (1 - a / b) * 100;
+                },
+                aTranformation: (a) {
+                  return double.parse(a);
+                },
+                bTransformation: (b) {
+                  return double.parse(b);
                 },
               ),
             ),
             CalculCardWidget(
-              titre : "Prix d'achat net",
+              titre: "Prix d'achat net",
               superDescription: "Calcul du prix d'achat net",
-              description: "En fonction du prix d'achat brute et d'un taux de remise",
-              dialog: CardDialog(
-                titre: "Calcul prix d'achat net",
-                labelGauche: "Prix d'achat brut (€)",
-                labelDroite: "Taux de remise (%)",
-                labelResultat: "Prix d'achat net",
-                resultat: (a, b) {
-                  return a * (1 - b);
-                },
-              ),
+              description:
+                  "En fonction du prix d'achat brut et d'un taux de remise",
+              dialog: CalculCardDialog(
+                  titre: "Calcul prix d'achat net",
+                  labelGauche: "Prix d'achat brut (€)",
+                  labelDroite: "Taux de remise (%)",
+                  labelResultat: "Prix d'achat net",
+                  resultat: (a, b) {
+                    return a * (1 - b);
+                  },
+                  aTranformation: (a) {
+                    return double.parse(a);
+                  },
+                  bTransformation: (b) {
+                    return double.parse(b) / 100;
+                  }),
             ),
           ],
         ),

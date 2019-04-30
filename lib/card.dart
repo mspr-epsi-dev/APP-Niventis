@@ -16,7 +16,7 @@ class _CalculCardWidgetState extends State<CalculCardWidget> {
             padding: EdgeInsets.all(12.0),
             child: Row(
               // Replace with a Row for horizontal icon + text
-              children: <Widget>[Icon(Icons.attach_money), Text(widget.titre)],
+              children: <Widget>[Icon(widget.icon), Text(widget.titre)],
             ),
             onPressed: () {
               _showDialog(context);
@@ -63,7 +63,7 @@ class _CalculCardWidgetState extends State<CalculCardWidget> {
                           )),
                       keyboardType: TextInputType.number,
                       onChanged: (newVal) {
-                        chiffreA = double.parse(newVal);
+                        chiffreA = widget.dialog.bTransformation(newVal);
                         _setResCalcul();
                       },
                     ),
@@ -77,7 +77,7 @@ class _CalculCardWidgetState extends State<CalculCardWidget> {
                           )),
                       keyboardType: TextInputType.number,
                       onChanged: (newVal) {
-                        chiffreB = double.parse(newVal) / 100;
+                          chiffreB = widget.dialog.bTransformation(newVal);
                         _setResCalcul();
                       },
                     ),
@@ -86,7 +86,8 @@ class _CalculCardWidgetState extends State<CalculCardWidget> {
               ),
             ),
             new SimpleDialogOption(
-              child: new Text(widget.dialog.labelResultat + " " + ": $_resCalcul€"),
+              child: new Text(
+                  widget.dialog.labelResultat + " " + ": $_resCalcul€"),
             ),
             new SimpleDialogOption(
               child: new FlatButton(
@@ -107,6 +108,7 @@ class CalculCardWidget extends StatefulWidget {
   const CalculCardWidget(
       {Key key,
       this.titre,
+      this.icon = Icons.euro_symbol,
       this.superDescription,
       this.description,
       this.dialog})
@@ -114,23 +116,33 @@ class CalculCardWidget extends StatefulWidget {
 
   final String titre;
 
+  final IconData icon;
+
   final String superDescription;
 
   final String description;
 
-  final CardDialog dialog;
+  final CalculCardDialog dialog;
 
   @override
   _CalculCardWidgetState createState() => _CalculCardWidgetState();
 }
 
-class CardDialog {
+class CalculCardDialog {
   final String titre;
   final String labelGauche;
   final String labelDroite;
   final String labelResultat;
   final Function(double, double) resultat;
+  final Function(String) aTranformation;
+  final Function(String) bTransformation;
 
-  const CardDialog({this.titre, this.labelGauche, this.labelDroite,
-      this.labelResultat, @required this.resultat});
+  const CalculCardDialog(
+      {this.titre,
+      this.labelGauche,
+      this.labelDroite,
+      this.labelResultat,
+      @required this.resultat,
+      @required this.aTranformation,
+      @required this.bTransformation});
 }
