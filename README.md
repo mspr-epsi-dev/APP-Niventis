@@ -1,16 +1,13 @@
-# niventis_app
+# Niventis APP
 
-Application Niventis
+Application Niventis (Pharmacie imaginaire)
 
-## Getting Started
+## Présentation
 
-This project is a starting point for a Flutter application.
+This project is a Flutter application.
 
-A few resources to get you started if this is your first Flutter project:
+Afin de mieux répondre aux besoins des pharmaciens, Nivantis souhaite mettre en place une application PC/Android à destination des DMO (Délégués Médecins Officines).
+Nivantis souhaite fournir un ensemble de données au DMO concernant la **pharmacie à proximité** (géolocalisation + identification manuelle si absence de réseau). 
+Ces données sont par exemple, les achats par produit de la pharmacie, les ventes, les besoins en formation…
 
-- [Lab: Write your first Flutter app](https://flutter.io/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.io/docs/cookbook)
-
-For help getting started with Flutter, view our 
-[online documentation](https://flutter.io/docs), which offers tutorials, 
-samples, guidance on mobile development, and a full API reference.
+Ces données proviennent d’une **base clientèle** qui doit être régulièrement et facilement mise à jour par Nivantis.
