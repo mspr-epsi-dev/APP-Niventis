@@ -49,7 +49,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 titre: "Taux de remise",
                 labelGauche: "Prix d’achat net",
                 labelDroite: "Prix d’achat brut",
-                labelResultat: "Taux de remise",
+                labelResultat: "Resultat",
                 resultat: (a, b) {
                   return (1 - a / b) * 100;
                 },
@@ -61,7 +61,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 },
               ),
             ),
-            CalculCardWidget(
+              CalculCardWidget(
               titre: "Prix d'achat net",
               superDescription: "Calcul du prix d'achat net",
               description:
@@ -70,7 +70,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   titre: "Calcul prix d'achat net",
                   labelGauche: "Prix d'achat brut (€)",
                   labelDroite: "Taux de remise (%)",
-                  labelResultat: "Prix d'achat net",
+                  labelResultat: "Resultat",
                   resultat: (a, b) {
                     return a * (1 - b);
                   },
@@ -79,6 +79,46 @@ class _MyHomePageState extends State<MyHomePage> {
                   },
                   bTransformation: (b) {
                     return double.parse(b) / 100;
+                  }),
+            ),
+            CalculCardWidget(
+              titre: "Prix de vente net",
+              superDescription: "Calcul du prix de vente net",
+              description:
+              "En fonction du prix d'achat brut et du coefficient multiplicateur",
+              dialog: CalculCardDialog(
+                  titre: "Calcul du prix de vente net",
+                  labelGauche: "Prix d'achat brut (€)",
+                  labelDroite: "Coef multiplicateur",
+                  labelResultat: "Resultat",
+                  resultat: (a, b) {
+                    return a * (b);
+                  },
+                  aTranformation: (a) {
+                    return double.parse(a);
+                  },
+                  bTransformation: (b) {
+                    return double.parse(b);
+                  }),
+            ),
+            CalculCardWidget(
+              titre: "Coefficient multiplicateur",
+              superDescription: "Calcul du Coefficient multiplicateur",
+              description:
+              "En fonction du prix de vente net et du prix d’achat net",
+              dialog: CalculCardDialog(
+                  titre: "Calcul du Coefficient multiplicateur",
+                  labelGauche: "Prix de vente net",
+                  labelDroite: "Prix d’achat net",
+                  labelResultat: "Resultat",
+                  resultat: (a, b) {
+                    return a / (b);
+                  },
+                  aTranformation: (a) {
+                    return double.parse(a);
+                  },
+                  bTransformation: (b) {
+                    return double.parse(b);
                   }),
             ),
           ],
