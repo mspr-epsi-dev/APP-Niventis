@@ -38,7 +38,16 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           children: <Widget>[
-            Text('Bienvenue sur la calculatrice de Niventis'),
+            Text(' '),
+            Text(' '),
+            Text(
+             'Bienvenue sur la calculatrice de Niventis',
+              style: TextStyle(
+                fontSize: 16,
+              ),
+            ),
+            Text(' '),
+            Text(' '),
             CalculCardWidget(
               titre: "Taux de remise",
               icon: Icons.replay_10,
@@ -61,6 +70,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 },
               ),
             ),
+        Text(' '),
               CalculCardWidget(
               titre: "Prix d'achat net",
               superDescription: "Calcul du prix d'achat net",
@@ -81,6 +91,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     return double.parse(b) / 100;
                   }),
             ),
+            Text(' '),
             CalculCardWidget(
               titre: "Prix de vente net",
               superDescription: "Calcul du prix de vente net",
@@ -101,6 +112,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     return double.parse(b);
                   }),
             ),
+            Text(' '),
             CalculCardWidget(
               titre: "Coefficient multiplicateur",
               superDescription: "Calcul du Coefficient multiplicateur",
