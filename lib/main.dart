@@ -101,6 +101,7 @@ class _MyHomePageState extends State<MyHomePage> {
         appBar: AppBar(
           title: Text(widget.title),
         ),
+        resizeToAvoidBottomPadding: false,
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.start,
