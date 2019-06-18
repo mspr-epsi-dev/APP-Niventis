@@ -10,7 +10,7 @@ import 'card.dart';
 void main() => runApp(MyApp());
 
 Future<List<Pharma>> getPharmas() async {
-  String url = 'http://35.187.96.84/api/pharmacies';
+  String url = 'https://projets.maxdep.fr/niventis/api/pharmacies';
   final response = await http.get(url, headers: {"Accept": "application/json"});
 
   if (response.statusCode == 200) {
@@ -21,14 +21,40 @@ Future<List<Pharma>> getPharmas() async {
   }
 }
 
+class Address {
+  final int nbr;
+  final String street;
+  final String city;
+
+  Address({this.nbr, this.street, this.city});
+
+  factory Address.fromJson(Map<String, dynamic> json) {
+    return Address(
+        nbr: json['nbr'], street: json['street'], city: json['city']);
+  }
+
+  @override
+  String toString() => '$nbr $street, $city';
+}
+
 class Pharma {
   final String id;
   final String name;
+  final Address address;
+  final String trainingNeed;
+  final List location;
 
-  Pharma({this.id, this.name});
+  Pharma({this.id, this.name, this.address, this.trainingNeed, this.location});
 
   factory Pharma.fromJson(Map<String, dynamic> json) {
-    return Pharma(id: json['_id'], name: json['name']);
+    debugPrint(json['adress'].toString());
+    return Pharma(
+        id: json['_id'],
+        name: json['name'],
+        address: Address.fromJson(json['adress']),
+        trainingNeed: json['trainingNeed'].toString(),
+        location: json['gpsCoordinates']
+    );
   }
 }
 
@@ -105,9 +131,14 @@ class _MyHomePageState extends State<MyHomePage> {
                               return new PharmaCardWidget(
                                 titre: pharmas[position].name,
                                 icon: Icons.search,
-                                superDescription: "",
-                                description: pharmas[position].id,
-                                dialog: null,
+                                superDescription:
+                                    pharmas[position].trainingNeed,
+                                description:
+                                    pharmas[position].address.toString(),
+                                dialog: PharmaCardDialog(
+                                  titre: pharmas[position].name,
+                                  location: pharmas[position].location
+                                ),
                               );
                             });
                       } else if (snapshot.hasError) {
