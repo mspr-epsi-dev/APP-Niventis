@@ -9,13 +9,22 @@ import 'card.dart';
 
 void main() => runApp(MyApp());
 
-Future<List<Pharma>> getPharmas() async {
-  String url = 'https://projets.maxdep.fr/niventis/api/pharmacies';
-  final response = await http.get(url, headers: {"Accept": "application/json"});
-
+Future<List<Pharma>> getPharmas(double long, double latt) async {
+  Uri uri;
+  if(long == null && latt == null){
+    uri = Uri.https('projets.maxdep.fr', '/niventis/api/pharmacies');
+  }else {
+    var queryParameters = {
+      'long': long.toString(),
+      'latt': latt.toString(),
+    };
+    uri = Uri.https('projets.maxdep.fr', '/niventis/api/localisation', queryParameters);
+  }
+  final response = await http.get(uri, headers: {"Accept": "application/json"});
   if (response.statusCode == 200) {
-    List responseJson = json.decode(response.body);
-    return responseJson.map((m) => new Pharma.fromJson(m)).toList();
+    final responseJson = json.decode(response.body).cast<Map<String, dynamic>>();
+    debugPrint(responseJson.toString());
+    return responseJson.map<Pharma>((json) => new Pharma.fromJson(json)).toList();
   } else {
     throw Exception('Impossible d\'obtenir les données');
   }
@@ -49,11 +58,11 @@ class Pharma {
   factory Pharma.fromJson(Map<String, dynamic> json) {
     debugPrint(json['adress'].toString());
     return Pharma(
-        id: json['_id'],
-        name: json['name'],
+        id: json['_id'] as String,
+        name: json['name'] as String,
         address: Address.fromJson(json['adress']),
-        trainingNeed: json['trainingNeed'].toString(),
-        location: json['gpsCoordinates']
+        trainingNeed: json['trainingNeed'] as String,
+        location: json['gpsCoordinates'] as List
     );
   }
 }
@@ -82,13 +91,17 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   String _position = "Aucune position";
+  double _positionLong;
+  double _positionLatt;
 
   void getLocation() async {
-    Geolocator()
+    await Geolocator()
         .getCurrentPosition(desiredAccuracy: LocationAccuracy.medium)
         .then((location) {
       if (location != null) {
         setState(() {
+          _positionLong = location.longitude;
+          _positionLatt = location.latitude;
           _position = location.toString();
         });
       }
@@ -120,7 +133,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 child: ConstrainedBox(
                   constraints: BoxConstraints.expand(height: 474),
                   child: new FutureBuilder<List<Pharma>>(
-                    future: getPharmas(),
+                    future: getPharmas(_positionLong, _positionLatt),
                     builder: (context, snapshot) {
                       if (snapshot.hasData) {
                         List<Pharma> pharmas = snapshot.data;
