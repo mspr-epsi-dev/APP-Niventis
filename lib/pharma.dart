@@ -57,7 +57,12 @@ class Pharma {
           .map<Pharma>((json) => new Pharma.fromJson(json))
           .toList();
     } else {
-      throw Exception('Impossible d\'obtenir les données');
+      if (response.statusCode == 404) {
+        throw Exception('Impossible d\'obtenir les données.' +
+            jsonDecode(response.body)['message']);
+      } else {
+        throw Exception('Impossible d\'obtenir les données.');
+      }
     }
   }
 }

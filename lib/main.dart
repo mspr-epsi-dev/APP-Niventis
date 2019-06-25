@@ -1,6 +1,3 @@
-import 'dart:async';
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 
@@ -22,6 +19,40 @@ class MyApp extends StatelessWidget {
   }
 }
 
+/** class PharmasStorage {
+    Future<String> get _localPath async {
+    final directory = await getApplicationDocumentsDirectory();
+
+    return directory.path;
+    }
+
+    Future<File> get _localFile async {
+    final path = await _localPath;
+    return File('$path/pharmas.json');
+    }
+
+    Future<int> readPharmas() async {
+    try {
+    final file = await _localFile;
+
+    // Read the file
+    String contents = await file.readAsString();
+
+    return int.parse(contents);
+    } catch (e) {
+    // If encountering an error, return 0
+    return 0;
+    }
+    }
+
+    Future<File> writePharmas(int counter) async {
+    final file = await _localFile;
+
+    // Write the file
+    return file.writeAsString('$counter');
+    }
+    } **/
+
 class MyHomePage extends StatefulWidget {
   MyHomePage({Key key, this.title}) : super(key: key);
 
@@ -32,12 +63,28 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  // final TextEditingController _filter = new TextEditingController();
-  // String _searchText = "";
-  // List _pharmas_names = new List();
+  final TextEditingController _filter = new TextEditingController();
+  String _searchText = "";
+  List<Pharma> pharmas;
+  List<Pharma> filterPharmas;
   String _position = "Aucune position";
   double _positionLong;
   double _positionLatt;
+
+  _MyHomePageState() {
+    _filter.addListener(() {
+      if (_filter.text.isEmpty) {
+        setState(() {
+          _searchText = "";
+          filterPharmas = pharmas;
+        });
+      } else {
+        setState(() {
+          _searchText = _filter.text;
+        });
+      }
+    });
+  }
 
   void getLocation() async {
     await Geolocator()
@@ -67,6 +114,7 @@ class _MyHomePageState extends State<MyHomePage> {
               new Container(
                 margin: const EdgeInsets.only(top: 20, left: 10, right: 10),
                 child: TextField(
+                  controller: _filter,
                   obscureText: false,
                   decoration: InputDecoration(
                     border: OutlineInputBorder(),
@@ -82,10 +130,27 @@ class _MyHomePageState extends State<MyHomePage> {
                     future: Pharma.getPharmas(_positionLong, _positionLatt),
                     builder: (context, snapshot) {
                       if (snapshot.hasData) {
-                        List<Pharma> pharmas = snapshot.data;
+                        pharmas = snapshot.data;
+                        pharmas.shuffle();
+                        filterPharmas = pharmas;
+
+                        if (!(_searchText.isEmpty)) {
+                          List<Pharma> tempListPharma = new List<Pharma>();
+                          filterPharmas.forEach((Pharma p) {
+                            if (p.name
+                                .toLowerCase()
+                                .contains(_searchText.toLowerCase())) {
+                              tempListPharma.add(p);
+                            } else {
+                              tempListPharma.remove(p);
+                            }
+                          });
+                          filterPharmas = tempListPharma;
+                        }
                         return ListView.builder(
                             scrollDirection: Axis.vertical,
-                            itemCount: pharmas.length,
+                            itemCount:
+                                pharmas == null ? 0 : filterPharmas.length,
                             itemBuilder: (context, position) {
                               return new PharmaCardWidget(
                                 titre: pharmas[position].name,
