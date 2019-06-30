@@ -1,8 +1,13 @@
+import 'dart:convert';
+
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:geolocator/geolocator.dart';
 
 import 'pharma.dart';
 import 'card.dart';
+import 'package:niventis_app/pharmas_storage.dart';
 
 void main() => runApp(MyApp());
 
@@ -14,49 +19,19 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primaryColor: Colors.greenAccent,
       ),
-      home: MyHomePage(title: 'Alpha Niventis V2'),
+      home: MyHomePage(
+        title: 'Alpha Niventis V2',
+        storage: new PharmasStorage(),
+      ),
     );
   }
 }
 
-/** class PharmasStorage {
-    Future<String> get _localPath async {
-    final directory = await getApplicationDocumentsDirectory();
-
-    return directory.path;
-    }
-
-    Future<File> get _localFile async {
-    final path = await _localPath;
-    return File('$path/pharmas.json');
-    }
-
-    Future<int> readPharmas() async {
-    try {
-    final file = await _localFile;
-
-    // Read the file
-    String contents = await file.readAsString();
-
-    return int.parse(contents);
-    } catch (e) {
-    // If encountering an error, return 0
-    return 0;
-    }
-    }
-
-    Future<File> writePharmas(int counter) async {
-    final file = await _localFile;
-
-    // Write the file
-    return file.writeAsString('$counter');
-    }
-    } **/
-
 class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title}) : super(key: key);
-
+  final PharmasStorage storage;
   final String title;
+
+  MyHomePage({Key key, this.title, @required this.storage}) : super(key: key);
 
   @override
   _MyHomePageState createState() => _MyHomePageState();
@@ -64,12 +39,14 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   final TextEditingController _filter = new TextEditingController();
+  ScaffoldState scaffold;
   String _searchText = "";
   List<Pharma> pharmas;
   List<Pharma> filterPharmas;
   String _position = "Aucune position";
   double _positionLong;
   double _positionLatt;
+  bool pharmasPersist = false;
 
   _MyHomePageState() {
     _filter.addListener(() {
@@ -131,43 +108,30 @@ class _MyHomePageState extends State<MyHomePage> {
                     builder: (context, snapshot) {
                       if (snapshot.hasData) {
                         pharmas = snapshot.data;
-                        pharmas.shuffle();
-                        filterPharmas = pharmas;
-
-                        if (!(_searchText.isEmpty)) {
-                          List<Pharma> tempListPharma = new List<Pharma>();
-                          filterPharmas.forEach((Pharma p) {
-                            if (p.name
-                                .toLowerCase()
-                                .contains(_searchText.toLowerCase())) {
-                              tempListPharma.add(p);
-                            } else {
-                              tempListPharma.remove(p);
-                            }
-                          });
-                          filterPharmas = tempListPharma;
+                        if (!pharmasPersist) {
+                          print("Pharma persist");
+                          print(widget.storage.writePharmas(pharmas));
+                          pharmasPersist = true;
                         }
-                        return ListView.builder(
-                            scrollDirection: Axis.vertical,
-                            itemCount:
-                                pharmas == null ? 0 : filterPharmas.length,
-                            itemBuilder: (context, position) {
-                              return new PharmaCardWidget(
-                                titre: pharmas[position].name,
-                                icon: Icons.search,
-                                superDescription:
-                                    pharmas[position].trainingNeed,
-                                description:
-                                    pharmas[position].address.toString(),
-                                dialog: PharmaCardDialog(
-                                    titre: pharmas[position].name,
-                                    location: pharmas[position].location),
-                              );
-                            });
                       } else if (snapshot.hasError) {
-                        return Text('${snapshot.error}');
+                        widget.storage.readPharmas().then((String value) {
+                          List l = jsonDecode(value);
+                          pharmas = l.map((p)=> Pharma.fromJson(p)).toList();
+                          print(jsonDecode(value));
+                        });
+                        print('${snapshot.error}');
                       }
-                      return CircularProgressIndicator();
+                      if (pharmas == null) {
+                        SchedulerBinding.instance.addPostFrameCallback((_) =>
+                            _showSnackBar(context,
+                                "Impossible d'obtenir les pharmacies"));
+                      } else {
+                        return pharmaListWidget();
+                      }
+
+                      return Center(
+                        child: CircularProgressIndicator(strokeWidth: 5),
+                      );
                     },
                   ),
                 ),
@@ -179,5 +143,43 @@ class _MyHomePageState extends State<MyHomePage> {
             onPressed: getLocation,
             tooltip: 'Location',
             child: Icon(Icons.location_searching)));
+  }
+
+  void _showSnackBar(BuildContext context, String msg) {
+    Scaffold.of(context).showSnackBar(new SnackBar(
+      content: new Text(msg),
+      duration: const Duration(seconds: 15),
+    ));
+  }
+
+  Widget pharmaListWidget() {
+    pharmas.shuffle();
+    filterPharmas = pharmas;
+
+    if (_searchText.isNotEmpty) {
+      List<Pharma> tempListPharma = new List<Pharma>();
+      filterPharmas.forEach((Pharma p) {
+        if (p.name.toLowerCase().contains(_searchText.toLowerCase())) {
+          tempListPharma.add(p);
+        } else {
+          tempListPharma.remove(p);
+        }
+      });
+      filterPharmas = tempListPharma;
+    }
+    return ListView.builder(
+        scrollDirection: Axis.vertical,
+        itemCount: pharmas == null ? 0 : filterPharmas.length,
+        itemBuilder: (context, position) {
+          return new PharmaCardWidget(
+            titre: pharmas[position].name,
+            icon: Icons.search,
+            superDescription: pharmas[position].trainingNeed,
+            description: pharmas[position].address.toString(),
+            dialog: PharmaCardDialog(
+                titre: pharmas[position].name,
+                location: pharmas[position].location),
+          );
+        });
   }
 }

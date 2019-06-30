@@ -14,6 +14,8 @@ class Address {
         nbr: json['nbr'], street: json['street'], city: json['city']);
   }
 
+  Map<String, dynamic> toJson() => {'nbr': nbr, 'street': street, 'city': city};
+
   @override
   String toString() => '$nbr $street, $city';
 }
@@ -35,6 +37,14 @@ class Pharma {
         trainingNeed: json['trainingNeed'] as String,
         location: json['gpsCoordinates'] as List);
   }
+
+  Map<String, dynamic> toJson() => {
+        '_id': id,
+        'name': name,
+        'adress': address.toJson(),
+        'trainingNeed': trainingNeed,
+        'gpsCoordinates': location,
+      };
 
   static Future<List<Pharma>> getPharmas(double long, double latt) async {
     Uri uri;
