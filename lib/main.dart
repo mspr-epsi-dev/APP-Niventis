@@ -121,8 +121,8 @@ class _MyHomePageState extends State<MyHomePage> {
                           pharmas = lp
                               .map<Pharma>((json) => new Pharma.fromJson(json))
                               .toList();
-                          print(pharmas.toString());
                         });
+                        print(pharmas.toString());
                         print('${snapshot.error}');
                       }
                       if (pharmas == null) {

@@ -38,7 +38,7 @@ class PharmasStorage {
     pharmas.map((item)=>
         jsonList.add(jsonEncode(item.toJson()))
     ).toList();
-    print(jsonEncode(jsonList));
-    return file.writeAsString(jsonEncode(jsonList));
+    print(jsonList.toString());
+    return file.writeAsString(jsonList.toString());
   }
 }
