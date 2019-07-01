@@ -46,6 +46,9 @@ class Pharma {
         'gpsCoordinates': location,
       };
 
+  @override
+  String toString() => '$name';
+
   static Future<List<Pharma>> getPharmas(double long, double latt) async {
     Uri uri;
     if (long == null && latt == null) {
@@ -62,7 +65,7 @@ class Pharma {
         await http.get(uri, headers: {"Accept": "application/json"});
     if (response.statusCode == 200) {
       final responseJson =
-          json.decode(response.body).cast<Map<String, dynamic>>();
+          jsonDecode(response.body).cast<Map<String, dynamic>>();
       return responseJson
           .map<Pharma>((json) => new Pharma.fromJson(json))
           .toList();

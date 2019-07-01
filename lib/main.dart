@@ -47,6 +47,7 @@ class _MyHomePageState extends State<MyHomePage> {
   double _positionLong;
   double _positionLatt;
   bool pharmasPersist = false;
+  bool notif_display = false;
 
   _MyHomePageState() {
     _filter.addListener(() {
@@ -115,17 +116,25 @@ class _MyHomePageState extends State<MyHomePage> {
                         }
                       } else if (snapshot.hasError) {
                         widget.storage.readPharmas().then((String value) {
-                          List l = jsonDecode(value);
-                          pharmas = l.map((p)=> Pharma.fromJson(p)).toList();
-                          print(jsonDecode(value));
+                          final lp =
+                              jsonDecode(value).cast<Map<String, dynamic>>();
+                          pharmas = lp
+                              .map<Pharma>((json) => new Pharma.fromJson(json))
+                              .toList();
+                          print(pharmas.toString());
                         });
                         print('${snapshot.error}');
                       }
                       if (pharmas == null) {
                         SchedulerBinding.instance.addPostFrameCallback((_) =>
                             _showSnackBar(context,
-                                "Impossible d'obtenir les pharmacies"));
+                                "Impossible d'obtenir les pharmacies", false));
                       } else {
+                        SchedulerBinding.instance.addPostFrameCallback((_) =>
+                            _showSnackBar(
+                                context,
+                                "Liste des pharmacies affichée avec succès",
+                                true));
                         return pharmaListWidget();
                       }
 
@@ -145,15 +154,22 @@ class _MyHomePageState extends State<MyHomePage> {
             child: Icon(Icons.location_searching)));
   }
 
-  void _showSnackBar(BuildContext context, String msg) {
-    Scaffold.of(context).showSnackBar(new SnackBar(
-      content: new Text(msg),
-      duration: const Duration(seconds: 15),
-    ));
+  void _showSnackBar(BuildContext context, String msg, bool ok) {
+    if (!notif_display) {
+      Scaffold.of(context).showSnackBar(new SnackBar(
+        content: new Text(msg),
+        duration: const Duration(seconds: 5),
+      ));
+      if (ok) {
+        notif_display = true;
+      }
+    }
   }
 
   Widget pharmaListWidget() {
-    pharmas.shuffle();
+    // Melange les pharmas
+    // pharmas.shuffle();
+
     filterPharmas = pharmas;
 
     if (_searchText.isNotEmpty) {
@@ -161,8 +177,7 @@ class _MyHomePageState extends State<MyHomePage> {
       filterPharmas.forEach((Pharma p) {
         if (p.name.toLowerCase().contains(_searchText.toLowerCase())) {
           tempListPharma.add(p);
-        } else {
-          tempListPharma.remove(p);
+          print(tempListPharma.toString());
         }
       });
       filterPharmas = tempListPharma;
@@ -172,13 +187,13 @@ class _MyHomePageState extends State<MyHomePage> {
         itemCount: pharmas == null ? 0 : filterPharmas.length,
         itemBuilder: (context, position) {
           return new PharmaCardWidget(
-            titre: pharmas[position].name,
+            titre: filterPharmas[position].name,
             icon: Icons.search,
-            superDescription: pharmas[position].trainingNeed,
-            description: pharmas[position].address.toString(),
+            superDescription: filterPharmas[position].trainingNeed,
+            description: filterPharmas[position].address.toString(),
             dialog: PharmaCardDialog(
-                titre: pharmas[position].name,
-                location: pharmas[position].location),
+                titre: filterPharmas[position].name,
+                location: filterPharmas[position].location),
           );
         });
   }
