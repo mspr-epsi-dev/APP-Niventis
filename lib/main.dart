@@ -47,7 +47,7 @@ class _MyHomePageState extends State<MyHomePage> {
   double _positionLong;
   double _positionLatt;
   bool pharmasPersist = false;
-  bool notif_display = false;
+  bool notifDisplay = false;
 
   _MyHomePageState() {
     _filter.addListener(() {
@@ -113,31 +113,43 @@ class _MyHomePageState extends State<MyHomePage> {
                           print("Pharma persist");
                           print(widget.storage.writePharmas(pharmas));
                           pharmasPersist = true;
+                          if (pharmas == null) {
+                            SchedulerBinding.instance.addPostFrameCallback((_) =>
+                                _showSnackBar(context,
+                                    "Impossible d'obtenir les pharmacies", false));
+                          } else {
+                            SchedulerBinding.instance.addPostFrameCallback((_) =>
+                                _showSnackBar(
+                                    context,
+                                    "Liste des pharmacies affichée avec succès",
+                                    true));
+                          }
                         }
                       } else if (snapshot.hasError) {
-                        widget.storage.readPharmas().then((String value) {
-                          final lp =
-                              jsonDecode(value).cast<Map<String, dynamic>>();
-                          pharmas = lp
-                              .map<Pharma>((json) => new Pharma.fromJson(json))
-                              .toList();
-                        });
-                        print(pharmas.toString());
+                        return Container(
+                          child: new FutureBuilder<List<Pharma>>(
+                            future: widget.storage.readPharmas(),
+                            builder: (context, snapshot2) {
+                              pharmas = snapshot2.data;
+                              if (pharmas == null) {
+                                SchedulerBinding.instance.addPostFrameCallback((_) =>
+                                    _showSnackBar(context,
+                                        "Impossible d'obtenir les pharmacies", false));
+                                return new Text("");
+                              } else {
+                                SchedulerBinding.instance.addPostFrameCallback((_) =>
+                                    _showSnackBar(
+                                        context,
+                                        "Liste des pharmacies affichée avec succès",
+                                        true));
+                                return pharmaListWidget();
+                              }
+                            },
+                          ),
+                        );
                         print('${snapshot.error}');
                       }
-                      if (pharmas == null) {
-                        SchedulerBinding.instance.addPostFrameCallback((_) =>
-                            _showSnackBar(context,
-                                "Impossible d'obtenir les pharmacies", false));
-                      } else {
-                        SchedulerBinding.instance.addPostFrameCallback((_) =>
-                            _showSnackBar(
-                                context,
-                                "Liste des pharmacies affichée avec succès",
-                                true));
-                        return pharmaListWidget();
-                      }
-
+                      return pharmaListWidget();
                       return Center(
                         child: CircularProgressIndicator(strokeWidth: 5),
                       );
@@ -155,13 +167,13 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _showSnackBar(BuildContext context, String msg, bool ok) {
-    if (!notif_display) {
+    if (!notifDisplay) {
       Scaffold.of(context).showSnackBar(new SnackBar(
         content: new Text(msg),
         duration: const Duration(seconds: 5),
       ));
       if (ok) {
-        notif_display = true;
+        notifDisplay   = true;
       }
     }
   }
