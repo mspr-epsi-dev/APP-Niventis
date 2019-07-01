@@ -1,3 +1,4 @@
+[![Codemagic build status](https://api.codemagic.io/apps/5d1a1388f145f60ea845f54e/5d1a1388f145f60ea845f54d/status_badge.svg)](https://codemagic.io/apps/5d1a1388f145f60ea845f54e/5d1a1388f145f60ea845f54d/latest_build)
 # niventis_app
 
 Application Niventis
