@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
@@ -39,29 +37,24 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   final TextEditingController _filter = new TextEditingController();
+  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
   ScaffoldState scaffold;
   String _searchText = "";
-  List<Pharma> pharmas;
-  List<Pharma> filterPharmas;
+  List<Pharma> _pharmas;
+  List<Pharma> _filterPharmas;
   String _position = "Aucune position";
-  double _positionLong;
-  double _positionLatt;
-  bool pharmasPersist = false;
-  bool notifDisplay = false;
 
-  _MyHomePageState() {
-    _filter.addListener(() {
-      if (_filter.text.isEmpty) {
-        setState(() {
-          _searchText = "";
-          filterPharmas = pharmas;
-        });
-      } else {
-        setState(() {
-          _searchText = _filter.text;
-        });
-      }
-    });
+  void _searchPharmas() {
+    if (_filter.text.isEmpty) {
+      setState(() {
+        _searchText = "";
+        _filterPharmas = _pharmas;
+      });
+    } else if(_pharmas != null){
+      setState(() {
+        _searchText = _filter.text;
+      });
+    }
   }
 
   void getLocation() async {
@@ -69,18 +62,24 @@ class _MyHomePageState extends State<MyHomePage> {
         .getCurrentPosition(desiredAccuracy: LocationAccuracy.medium)
         .then((location) {
       if (location != null) {
-        setState(() {
-          _positionLong = location.longitude;
-          _positionLatt = location.latitude;
-          _position = location.toString();
+        _position = location.toString();
+        Pharma.latt = location.latitude;
+        Pharma.long = location.longitude;
+        Pharma.getPharmas().then((List<Pharma> pharmasResult) {
+          setState(() {
+            _pharmas = pharmasResult;
+          });
         });
       }
+    }).whenComplete(() {
+      print("Fin localisation");
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+        key: _scaffoldKey,
         appBar: AppBar(
           title: Text(widget.title),
         ),
@@ -90,69 +89,41 @@ class _MyHomePageState extends State<MyHomePage> {
             mainAxisAlignment: MainAxisAlignment.start,
             children: <Widget>[
               new Container(
-                margin: const EdgeInsets.only(top: 20, left: 10, right: 10),
-                child: TextField(
-                  controller: _filter,
-                  obscureText: false,
-                  decoration: InputDecoration(
-                    border: OutlineInputBorder(),
-                    labelText: '$_position',
-                  ),
-                ),
-              ),
+                  margin: const EdgeInsets.only(top: 20, left: 10, right: 10),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: <Widget>[
+                      new Flexible(
+                        child: new TextField(
+                            controller: _filter,
+                            obscureText: false,
+                            decoration: InputDecoration(
+                              border: OutlineInputBorder(),
+                              labelText: '$_position',
+                            )),
+                      ),
+                      new IconButton(
+                          icon: Icon(Icons.search), onPressed: _searchPharmas),
+                    ],
+                  )),
               new Container(
                 margin: const EdgeInsets.only(top: 5),
                 child: ConstrainedBox(
                   constraints: BoxConstraints.expand(height: 474),
-                  child: new FutureBuilder<List<Pharma>>(
-                    future: Pharma.getPharmas(_positionLong, _positionLatt),
-                    builder: (context, snapshot) {
-                      if (snapshot.hasData) {
-                        pharmas = snapshot.data;
-                        if (!pharmasPersist) {
-                          print("Pharma persist");
-                          print(widget.storage.writePharmas(pharmas));
-                          pharmasPersist = true;
-                          if (pharmas == null) {
-                            SchedulerBinding.instance.addPostFrameCallback((_) =>
-                                _showSnackBar(context,
-                                    "Impossible d'obtenir les pharmacies", false));
-                          } else {
-                            SchedulerBinding.instance.addPostFrameCallback((_) =>
-                                _showSnackBar(
-                                    context,
-                                    "Liste des pharmacies affichée avec succès",
-                                    true));
-                          }
-                        }
-                      } else if (snapshot.hasError) {
-                        return Container(
-                          child: new FutureBuilder<List<Pharma>>(
-                            future: widget.storage.readPharmas(),
-                            builder: (context, snapshot2) {
-                              pharmas = snapshot2.data;
-                              if (pharmas == null) {
-                                SchedulerBinding.instance.addPostFrameCallback((_) =>
-                                    _showSnackBar(context,
-                                        "Impossible d'obtenir les pharmacies", false));
-                                return new Text("");
-                              } else {
-                                SchedulerBinding.instance.addPostFrameCallback((_) =>
-                                    _showSnackBar(
-                                        context,
-                                        "Liste des pharmacies affichée avec succès",
-                                        true));
-                                return pharmaListWidget();
-                              }
-                            },
-                          ),
-                        );
-                        print('${snapshot.error}');
+                  child: new Builder(
+                    builder: (BuildContext context) {
+                      if (_pharmas != null) {
+                        widget.storage.writePharmas(_pharmas).whenComplete(() {
+                          print("Pharmacies saved");
+                          SchedulerBinding.instance.addPostFrameCallback((_) =>
+                              _showInSnackBar(
+                                  "Pharmacies affichées avec succès"));
+                        });
+                      } else {
+                        SchedulerBinding.instance.addPostFrameCallback(
+                            (_) => _showInSnackBar("Aucune pharmacie"));
                       }
                       return pharmaListWidget();
-                      return Center(
-                        child: CircularProgressIndicator(strokeWidth: 5),
-                      );
                     },
                   ),
                 ),
@@ -166,46 +137,38 @@ class _MyHomePageState extends State<MyHomePage> {
             child: Icon(Icons.location_searching)));
   }
 
-  void _showSnackBar(BuildContext context, String msg, bool ok) {
-    if (!notifDisplay) {
-      Scaffold.of(context).showSnackBar(new SnackBar(
-        content: new Text(msg),
-        duration: const Duration(seconds: 5),
-      ));
-      if (ok) {
-        notifDisplay   = true;
-      }
-    }
+  void _showInSnackBar(String value) {
+    _scaffoldKey.currentState
+        .showSnackBar(new SnackBar(content: new Text(value)));
   }
 
   Widget pharmaListWidget() {
-    // Melange les pharmas
-    // pharmas.shuffle();
-
-    filterPharmas = pharmas;
+    _filterPharmas = _pharmas;
 
     if (_searchText.isNotEmpty) {
       List<Pharma> tempListPharma = new List<Pharma>();
-      filterPharmas.forEach((Pharma p) {
+      _filterPharmas.forEach((Pharma p) {
         if (p.name.toLowerCase().contains(_searchText.toLowerCase())) {
           tempListPharma.add(p);
           print(tempListPharma.toString());
         }
       });
-      filterPharmas = tempListPharma;
+      _filterPharmas = tempListPharma;
     }
     return ListView.builder(
         scrollDirection: Axis.vertical,
-        itemCount: pharmas == null ? 0 : filterPharmas.length,
+        itemCount: _pharmas == null ? 0 : _filterPharmas.length,
         itemBuilder: (context, position) {
           return new PharmaCardWidget(
-            titre: filterPharmas[position].name,
+            titre: _filterPharmas[position].name,
             icon: Icons.search,
-            superDescription: filterPharmas[position].trainingNeed,
-            description: filterPharmas[position].address.toString(),
+            description: _filterPharmas[position].address,
+            superDescription: (_filterPharmas[position].details == null)
+                ? ""
+                : _filterPharmas[position].details.trainingNeed,
             dialog: PharmaCardDialog(
-                titre: filterPharmas[position].name,
-                location: filterPharmas[position].location),
+                titre: _filterPharmas[position].name,
+                distance: _filterPharmas[position].distance),
           );
         });
   }

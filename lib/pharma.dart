@@ -1,55 +1,57 @@
 import 'dart:convert';
 
+import 'package:flutter/cupertino.dart';
 import 'package:http/http.dart' as http;
 
-class Address {
-  final int nbr;
-  final String street;
-  final String city;
+class PharmaDetails {
+  final String id;
+  final String trainingNeed;
 
-  Address({this.nbr, this.street, this.city});
+  PharmaDetails({this.id, @required this.trainingNeed});
 
-  factory Address.fromJson(Map<String, dynamic> json) {
-    return Address(
-        nbr: json['nbr'], street: json['street'], city: json['city']);
+  factory PharmaDetails.fromJson(Map<String, dynamic> json) {
+    return PharmaDetails(
+        id: json['id'] as String,
+        trainingNeed: json['trainingNeed'] as String);
   }
 
-  Map<String, dynamic> toJson() => {'nbr': nbr, 'street': street, 'city': city};
+  Map<String, dynamic> toJson() => {'_id': id, 'trainingNeed': trainingNeed};
 
   @override
-  String toString() => '$nbr $street, $city';
+  String toString() => '$trainingNeed';
 }
 
 class Pharma {
-  final String id;
   final String name;
-  final Address address;
-  final String trainingNeed;
-  final List location;
+  final String address;
+  final int distance;
+  final PharmaDetails details;
+  static double latt;
+  static double long;
 
-  Pharma({this.id, this.name, this.address, this.trainingNeed, this.location});
+  Pharma({@required this.name, this.address, this.distance, this.details});
 
   factory Pharma.fromJson(Map<String, dynamic> json) {
     return Pharma(
-        id: json['_id'] as String,
         name: json['name'] as String,
-        address: Address.fromJson(json['adress']),
-        trainingNeed: json['trainingNeed'] as String,
-        location: json['gpsCoordinates'] as List);
+        address: json['address'] as String,
+        distance: json['distance'] as int,
+        details: (json['pharmaDetails'] == null) ? null : PharmaDetails.fromJson(json['pharmaDetails'])
+    );
   }
 
   Map<String, dynamic> toJson() => {
-        '_id': id,
         'name': name,
-        'adress': address.toJson(),
-        'trainingNeed': trainingNeed,
-        'gpsCoordinates': location,
+        'address': address,
+        'distance': distance,
+        'pharmaDetails': (this.details == null) ? null : details.toJson()
       };
 
   @override
   String toString() => '$name';
 
-  static Future<List<Pharma>> getPharmas(double long, double latt) async {
+  static Future<List<Pharma>> getPharmas() async {
+
     Uri uri;
     if (long == null && latt == null) {
       uri = Uri.https('projets.maxdep.fr', '/niventis/api/pharmacies');
@@ -61,6 +63,7 @@ class Pharma {
       uri = Uri.https(
           'projets.maxdep.fr', '/niventis/api/localisation', queryParameters);
     }
+    print(uri.toString());
     final response =
         await http.get(uri, headers: {"Accept": "application/json"});
     if (response.statusCode == 200) {

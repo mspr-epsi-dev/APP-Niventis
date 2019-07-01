@@ -11,7 +11,6 @@ class _PharmaCardWidgetState extends State<PharmaCardWidget> {
           RaisedButton(
             padding: EdgeInsets.all(12.0),
             child: Row(
-              // Replace with a Row for horizontal icon + text
               children: <Widget>[Icon(widget.icon), Text(widget.titre)],
             ),
             onPressed: () {
@@ -33,12 +32,6 @@ class _PharmaCardWidgetState extends State<PharmaCardWidget> {
   }
 
   void _showDialog(BuildContext context) {
-    void _setResCalcul() {
-      setState(() {
-        //_resCalcul = widget.dialog.resultat(chiffreA, chiffreB);
-      });
-    }
-
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -46,7 +39,7 @@ class _PharmaCardWidgetState extends State<PharmaCardWidget> {
         return SimpleDialog(
           title: new Text(widget.dialog.titre),
           children: <Widget>[
-            new SimpleDialogOption(child: new Text("Localisation : " + widget.dialog.location.toString())),
+            new SimpleDialogOption(child: new Text("Distance : " + widget.dialog.distance.toString())),
             new SimpleDialogOption(
               child: new FlatButton(
                 child: new Text("Fermer"),
@@ -88,7 +81,7 @@ class PharmaCardWidget extends StatefulWidget {
 
 class PharmaCardDialog {
   final String titre;
-  final location;
+  final int distance;
 
-  const PharmaCardDialog({this.titre, this.location});
+  const PharmaCardDialog({this.titre, this.distance});
 }
