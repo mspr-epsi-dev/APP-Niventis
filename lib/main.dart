@@ -50,7 +50,7 @@ class _MyHomePageState extends State<MyHomePage> {
         _searchText = "";
         _filterPharmas = _pharmas;
       });
-    } else if(_pharmas != null){
+    } else if (_pharmas != null) {
       setState(() {
         _searchText = _filter.text;
       });
@@ -68,6 +68,13 @@ class _MyHomePageState extends State<MyHomePage> {
         Pharma.getPharmas().then((List<Pharma> pharmasResult) {
           setState(() {
             _pharmas = pharmasResult;
+          });
+        }).catchError((error) {
+          print(error.toString());
+          widget.storage.readPharmas().then((List<Pharma> pharmas) {
+            setState(() {
+              _pharmas = pharmas;
+            });
           });
         });
       }
@@ -124,6 +131,9 @@ class _MyHomePageState extends State<MyHomePage> {
                             (_) => _showInSnackBar("Aucune pharmacie"));
                       }
                       return pharmaListWidget();
+                      return Center(
+                        child: CircularProgressIndicator(strokeWidth: 5),
+                      );
                     },
                   ),
                 ),
