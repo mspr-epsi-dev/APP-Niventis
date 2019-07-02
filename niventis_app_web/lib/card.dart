@@ -1,6 +1,6 @@
+
 import 'package:flutter_web/material.dart';
 import 'package:flutter_web/widgets.dart';
-
 
 class _CalculCardWidgetState extends State<CalculCardWidget> {
   double chiffreA = 0;
