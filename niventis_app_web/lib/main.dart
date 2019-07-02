@@ -1,61 +1,164 @@
+import 'package:flutter_web/cupertino.dart';
 import 'package:flutter_web/material.dart';
+import 'package:flutter_web/scheduler.dart';
+import 'card.dart';
+import 'pharma.dart';
+// import 'package:geolocator/geolocator.dart';
 
 void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Niventis Application',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        primaryColor: Colors.greenAccent,
       ),
-      home: MyHomePage(title: 'Flutter Demo Home Page'),
+      home: MyHomePage(
+        title: 'Alpha Niventis V2',
+      ),
     );
   }
 }
 
-class MyHomePage extends StatelessWidget {
+class MyHomePage extends StatefulWidget {
+  final String title;
+
   MyHomePage({Key key, this.title}) : super(key: key);
 
-  final String title;
+  @override
+  _MyHomePageState createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  final TextEditingController _filter = new TextEditingController();
+  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
+  ScaffoldState scaffold;
+  String _searchText = "";
+  List<Pharma> _pharmas;
+  List<Pharma> _filterPharmas;
+  String _position = "Aucune position";
+
+  void _searchPharmas() {
+    if (_filter.text.isEmpty) {
+      setState(() {
+        _searchText = "";
+        _filterPharmas = _pharmas;
+      });
+    } else if (_pharmas != null) {
+      setState(() {
+        _searchText = _filter.text;
+      });
+    }
+  }
+
+  void getLocation() async {
+    Pharma.latt = 43.6328952;
+    Pharma.long = 3.8461164;
+    await Pharma.getPharmas().then((List<Pharma> pharmasResult) {
+      setState(() {
+        _pharmas = pharmasResult;
+      });
+    }).catchError((error) {
+      print(error.toString());
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
     return Scaffold(
-      appBar: AppBar(
-        title: Text(title),
-      ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Invoke "debug painting" (choose the "Toggle Debug Paint" action
-          // from the Flutter Inspector in Android Studio, or the "Toggle Debug
-          // Paint" command in Visual Studio Code) to see the wireframe for each
-          // widget.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Text(
-              'Hello, World!',
-            ),
-          ],
+        key: _scaffoldKey,
+        appBar: AppBar(
+          title: Text(widget.title),
         ),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
-    );
+        resizeToAvoidBottomPadding: false,
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: <Widget>[
+              new Container(
+                  margin: const EdgeInsets.only(top: 20, left: 10, right: 10),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: <Widget>[
+                      new Flexible(
+                        child: new TextField(
+                            controller: _filter,
+                            obscureText: false,
+                            decoration: InputDecoration(
+                              border: OutlineInputBorder(),
+                              labelText: '$_position',
+                            )),
+                      ),
+                      new IconButton(
+                          icon: Icon(Icons.search), onPressed: _searchPharmas),
+                    ],
+                  )),
+              new Container(
+                margin: const EdgeInsets.only(top: 5),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints.expand(height: 474),
+                  child: new Builder(
+                    builder: (BuildContext context) {
+                      if (_pharmas != null) {
+                        SchedulerBinding.instance.addPostFrameCallback((_) =>
+                            _showInSnackBar(
+                                "Pharmacies affichées avec succès"));
+                      } else {
+                        SchedulerBinding.instance.addPostFrameCallback(
+                            (_) => _showInSnackBar("Aucune pharmacie"));
+                      }
+                      return pharmaListWidget();
+                      return Center(
+                        child: CircularProgressIndicator(strokeWidth: 5),
+                      );
+                    },
+                  ),
+                ),
+              )
+            ],
+          ),
+        ),
+        floatingActionButton: FloatingActionButton(
+            onPressed: getLocation,
+            tooltip: 'Location',
+            child: Icon(Icons.location_searching)));
+  }
+
+  void _showInSnackBar(String value) {
+    _scaffoldKey.currentState
+        .showSnackBar(new SnackBar(content: new Text(value)));
+  }
+
+  Widget pharmaListWidget() {
+    _filterPharmas = _pharmas;
+
+    if (_searchText.isNotEmpty) {
+      List<Pharma> tempListPharma = new List<Pharma>();
+      _filterPharmas.forEach((Pharma p) {
+        if (p.name.toLowerCase().contains(_searchText.toLowerCase())) {
+          tempListPharma.add(p);
+          print(tempListPharma.toString());
+        }
+      });
+      _filterPharmas = tempListPharma;
+    }
+    return ListView.builder(
+        scrollDirection: Axis.vertical,
+        itemCount: _pharmas == null ? 0 : _filterPharmas.length,
+        itemBuilder: (context, position) {
+          return new PharmaCardWidget(
+            titre: _filterPharmas[position].name,
+            icon: Icons.search,
+            description: _filterPharmas[position].address,
+            superDescription: (_filterPharmas[position].details == null)
+                ? ""
+                : _filterPharmas[position].details.trainingNeed,
+            dialog: PharmaCardDialog(
+                titre: _filterPharmas[position].name,
+                distance: _filterPharmas[position].distance),
+          );
+        });
   }
 }

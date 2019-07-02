@@ -5,7 +5,7 @@ import 'package:geolocator/geolocator.dart';
 
 import 'pharma.dart';
 import 'card.dart';
-import 'package:niventis_app/pharmas_storage.dart';
+import 'pharmas_storage.dart';
 
 void main() => runApp(MyApp());
 
