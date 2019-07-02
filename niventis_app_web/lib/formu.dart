@@ -68,10 +68,10 @@ class Formu {
   }
 
   Map<String, dynamic> toJson() => {
-        'pharmacyId': pharmacyId,
-        'openQuestion': jsonEncode(openQuestions),
-        'qcmQuestion': jsonEncode(qcmQuestions),
-      };
+    'pharmacyId': pharmacyId,
+    'openQuestion': jsonEncode(openQuestions),
+    'qcmQuestion': jsonEncode(qcmQuestions),
+  };
 
   @override
   String toString() => '$pharmacyId';
@@ -81,10 +81,10 @@ class Formu {
     uri = Uri.https('projets.maxdep.fr', '/niventis/api/formular');
 
     final response =
-        await http.get(uri, headers: {"Accept": "application/json"});
+    await http.get(uri, headers: {"Accept": "application/json"});
     if (response.statusCode == 200) {
       final responseJson =
-          jsonDecode(response.body).cast<Map<String, dynamic>>();
+      jsonDecode(response.body).cast<Map<String, dynamic>>();
       print(responseJson);
       return responseJson
           .map<Formu>((json) => new Formu.fromJson(json)).toList();
